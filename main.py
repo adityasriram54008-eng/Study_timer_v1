@@ -70,57 +70,52 @@ with tab1:
         duration = 25*60
         with st.container(horizontal_alignment="center", width="stretch"):
 
-            if "running" not in st.session_state:
-                st.session_state.running = False
+            if "pomo_running" not in st.session_state:
+                st.session_state.pomo_running = False
 
-            if "start_time" not in st.session_state:
-                st.session_state.start_time = None
+            if "pomo_start_time" not in st.session_state:
+                st.session_state.pomo_start_time = None
 
-            timer_display = st.empty()
+            pomo_timer_display = st.empty()
 
-            if st.button("Start Timer"):
-                st.session_state.running = True
-                st.session_state.start_time = time.time()
+            if st.button("Start"):
+                st.session_state.pomo_running = True
+                st.session_state.pomo_start_time = time.time()
 
-            if "paused" not in st.session_state:
-                st.session_state.paused = 0
-
-            if st.button("Pause/Resume"):
-                if st.session_state.running:
-                    st.session_state.running = False
-                    stopped = int(time.time() - st.session_state.start_time)
-                    st.session_state.paused = stopped
-                    hours = stopped // 3600
-                    minutes = (stopped % 3600) // 60
-                    seconds = stopped % 60
-                    timer_display.header(f"{hours:02d}:{minutes:02d}:{seconds:02d}", text_alignment="center")
+            if st.button("Pause or Resume"):
+                if st.session_state.pomo_running:
+                    st.session_state.pomo_running = False
+                    elapsed = int(time.time() - st.session_state.pomo_start_time)
+                    remaining = duration - elapsed
+                    minutes = remaining // 60
+                    seconds = remaining % 60
+                    pomo_timer_display.header(f"{minutes:02d}:{seconds:02d}", text_alignment="center")
 
                 else:
-                    st.session_state.running = True
-                    st.session_state.start_time = (time.time() - st.session_state.paused)
+                    st.session_state.pomo_running = True
+                    elapsed = int(time.time() - st.session_state.pomo_start_time)
+                    st.session_state.pomo_start_time = (time.time() - st.session_state.paused)
 
-            if st.button("Stop Timer"):
-                st.session_state.running = False
-                stopped = int(time.time() - st.session_state.start_time)
-                hours = stopped // 3600
-                minutes = (stopped % 3600) // 60
-                seconds = stopped % 60
-                timer_display.header(f"{hours:02d}:{minutes:02d}:{seconds:02d}", text_alignment="center")
+            if st.button("Stop "):
+                st.session_state.pomo_running = False
+                elapsed = int(time.time() - st.session_state.pomo_start_time)
+                remaining = duration - elapsed
+                minutes = remaining // 60
+                seconds = remaining % 60
+                pomo_timer_display.header(f"{minutes:02d}:{seconds:02d}", text_alignment="center")
 
-            if st.button("Reset Timer"):
-                st.session_state.running = False
-                st.session_state.start_time = 0
-                st.session_state.paused = 0
-
+            if st.button("Reset"):
+                st.session_state.pomo_running = False
+                st.session_state.pomo_start_time = 25.00
+                st.session_state.pomo_paused = 0
 
             @st.fragment(run_every=1)
-            def timer():
-                if st.session_state.running:
-                    elapsed = int(time.time() - st.session_state.start_time)
-                    hours = elapsed // 3600
-                    minutes = (elapsed % 3600) // 60
-                    seconds = elapsed % 60
-                    timer_display.header(f"{hours:02d}:{minutes:02d}:{seconds:02d}", text_alignment="center")
+            def timerr():
+                if st.session_state.pomo_running:
+                    elapsed = int(time.time() - st.session_state.pomo_start_time)
+                    remaining = duration - elapsed
+                    minutes = remaining // 60
+                    seconds = remaining % 60
+                    pomo_timer_display.header(f"{minutes:02d}:{seconds:02d}", text_alignment="center")
 
-
-            timer()
+            timerr()
