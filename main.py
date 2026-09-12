@@ -4,7 +4,13 @@ import time
 st.set_page_config(layout="wide")
 st.title(":orange[**STUDY**] TIMER", text_alignment="center")
 
-with st.container(border=True):
+st.text("\n")
+st.text("\n")
+st.text("\n")
+st.text("\n")
+
+with st.container( horizontal_alignment="center", width = "stretch"):
+
     if "running" not in st.session_state:
         st.session_state.running = False
 
@@ -28,7 +34,7 @@ with st.container(border=True):
             hours = stopped // 3600
             minutes = (stopped % 3600) // 60
             seconds = stopped % 60
-            timer_display.header(f"{hours:02d}:{minutes:02d}:{seconds:02d}")
+            timer_display.header(f"{hours:02d}:{minutes:02d}:{seconds:02d}", text_alignment="center")
 
         else:
             st.session_state.running = True
@@ -40,11 +46,12 @@ with st.container(border=True):
         hours = stopped // 3600
         minutes = (stopped % 3600) // 60
         seconds = stopped % 60
-        timer_display.header(f"{hours:02d}:{minutes:02d}:{seconds:02d}")
+        timer_display.header(f"{hours:02d}:{minutes:02d}:{seconds:02d}", text_alignment="center")
 
     if st.button("Reset Timer"):
         st.session_state.running = False
-        st.session_state.start_time = time.time() - time.time()
+        st.session_state.start_time = 0
+        st.session_state.paused = 0
 
     @st.fragment(run_every=1)
     def timer():
@@ -53,6 +60,6 @@ with st.container(border=True):
             hours = elapsed // 3600
             minutes = (elapsed % 3600) // 60
             seconds = elapsed % 60
-            timer_display.header(f"{hours:02d}:{minutes:02d}:{seconds:02d}")
+            timer_display.header(f"{hours:02d}:{minutes:02d}:{seconds:02d}",text_alignment="center")
 
     timer()
