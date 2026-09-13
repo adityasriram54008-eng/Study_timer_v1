@@ -67,87 +67,91 @@ with tab1:
 
         timer()
 
-    with tab2:
+with tab2:
 
-        duration = 10
-        with st.container(horizontal_alignment="center", width="stretch"):
+    duration = 10
+    break_duration = 5
 
-            if "pomo_running" not in st.session_state:
+    with st.container(horizontal_alignment="center", width="stretch"):
+
+        if "pomo_running" not in st.session_state:
+            st.session_state.pomo_running = False
+
+        if "pomo_start_time" not in st.session_state:
+            st.session_state.pomo_start_time = None
+
+        if "pomo_phase" not in st.session_state:
+            st.session_state.pomo_phase = "pomodoro"
+
+        if "pomo_paused" not in st.session_state:
+            st.session_state.pomo_paused = duration
+
+        pomo_timer_display = st.empty()
+
+        if st.button("Start"):
+            st.session_state.pomo_running = True
+            st.session_state.pomo_phase = "pomodoro"
+            st.session_state.pomo_start_time = time.time()
+
+        if st.button("Pause or Resume"):
+            if st.session_state.pomo_running:
                 st.session_state.pomo_running = False
-
-            if "pomo_start_time" not in st.session_state:
-                st.session_state.pomo_start_time = None
-
-            if "pomo_pomodoro" not in st.session_state:
-                st.session_state.pomo_pomodoro = False
-            pomo_timer_display = st.empty()
-
-            if "pomo_breaker" not in st.session_state:
-                st.session_state.pomo_breaker = False
-
-            if st.button("Start"):
-                st.session_state.pomo_running = True
-                st.session_state.pomo_pomodoro = True
-                st.session_state.pomo_start_time = time.time()
-
-            if "pomo_paused" not in st.session_state:
-                st.session_state.pomo_paused = duration
-
-            if st.button("Pause or Resume"):
-                if st.session_state.pomo_running:
-                    st.session_state.pomo_running = False
+                if st.session_state.pomo_phase == "pomodoro":
                     elapsed = int(time.time() - st.session_state.pomo_start_time)
                     remaining = duration - elapsed
-                    st.session_state.pomo_paused = remaining
                     minutes = remaining // 60
                     seconds = remaining % 60
                     pomo_timer_display.header(f"{minutes:02d}:{seconds:02d}", text_alignment="center")
 
                 else:
-                    st.session_state.pomo_running = True
-                    st.session_state.pomo_start_time = (time.time() - (duration - st.session_state.pomo_paused))
-
-            if st.button("Stop "):
-                st.session_state.pomo_running = False
-                elapsed = int(time.time() - st.session_state.pomo_start_time)
-                remaining = duration - elapsed
-                minutes = remaining // 60
-                seconds = remaining % 60
-                pomo_timer_display.header(f"{minutes:02d}:{seconds:02d}", text_alignment="center")
-
-            if st.button("Reset"):
-                st.session_state.pomo_running = False
-                st.session_state.pomo_start_time = None
-                st.session_state.pomo_pomodoro = False
-                st.session_state.pomo_paused = duration
-
-            @st.fragment(run_every=1)
-            def timerr():
-                if st.session_state.pomo_running:
                     elapsed = int(time.time() - st.session_state.pomo_start_time)
-                    remaining = duration - elapsed
-                    if remaining <= 0:
-                        st.session_state.pomo_running = False
-                        st.session_state.pomo_pomodoro = False
-                        remaining = 0
-                        st.balloons()
-                        breaker()
+                    remaining = break_duration - elapsed
                     minutes = remaining // 60
                     seconds = remaining % 60
                     pomo_timer_display.header(f"{minutes:02d}:{seconds:02d}", text_alignment="center")
+                st.session_state.pomo_paused = remaining
 
 
-            @st.fragment(run_every=1)
-            def breaker():
+            else:
                 st.session_state.pomo_running = True
-                break_duration = 5
-                st.session_state.pomo_start_time = time.time()
-                elapsed = int(time.time()-st.session_state.pomo_start_time)
-                remaining = break_duration - elapsed
+                if st.session_state.pomo_phase == "pomodoro":
+                    st.session_state.pomo_start_time = (time.time() - (duration - st.session_state.pomo_paused))
+                else:
+                    st.session_state.pomo_start_time = (time.time() - (break_duration - st.session_state.pomo_paused))
+
+        if st.button("Stop"):
+            st.session_state.pomo_running = False
+
+        if st.button("Reset"):
+            st.session_state.pomo_running = False
+            st.session_state.pomo_phase = "pomodoro"
+            st.session_state.pomo_start_time = None
+            st.session_state.pomo_paused = duration
+
+        @st.fragment(run_every=1)
+        def timerr():
+            if st.session_state.pomo_running:
+
+                elapsed = int(time.time() - st.session_state.pomo_start_time)
+                if st.session_state.pomo_phase == "pomodoro":
+                    remaining = duration - elapsed
+                else:
+                    remaining = break_duration - elapsed
+
                 if remaining <= 0:
+                    remaining = 0
                     st.session_state.pomo_running = False
+                    st.balloons()
+                    if st.session_state.pomo_phase == "pomodoro":
+                        st.session_state.pomo_phase = "break"
+                        st.session_state.pomo_paused = break_duration
+                    else:
+                        st.session_state.pomo_phase = "pomodoro"
+                        st.session_state.pomo_paused = duration
+                    st.session_state.pomo_start_time = time.time()
+                    st.session_state.pomo_running = True
                 minutes = remaining // 60
                 seconds = remaining % 60
-                pomo_timer_display.header(f"{minutes:02d}:{seconds:02d}", text_alignment="center")
+                pomo_timer_display.header(f"{minutes:02d}:{seconds:02d}",text_alignment="center")
 
-            timerr()
+        timerr()
